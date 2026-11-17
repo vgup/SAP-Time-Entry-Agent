@@ -1,0 +1,223 @@
+{
+  "mcpTranslationVersion": "0.8",
+  "target": {
+    "ordId": "sap.s4:apiResource:API_MANAGE_WORKFORCE_TIMESHEET:v1",
+    "type": "openapi-v3"
+  },
+  "serverInfo": {
+    "name": "sap.mcp/workforce_timesheet",
+    "title": "workforce_timesheet",
+    "version": "1.0.0",
+    "description": "MCP server for the workforce_timesheet service."
+  },
+  "tools": [
+    {
+      "name": "list_timesheet_entries",
+      "title": "GET_TimeSheetEntryCollection",
+      "description": "Reads data for all workforce’s timesheet entries. It retrieves information about the time recording made by each workforce’s on a particular task and on a particular day. It also includes information such as recorded hours on a task, timesheet note, timesheet status and so on.",
+      "openApiType": {
+        "path": "/TimeSheetEntryCollection",
+        "method": "get",
+        "parameters": [
+          {
+            "name": "$top",
+            "description": "Show only the first n items, see [Paging - Top](https://help.sap.com/doc/5890d27be418427993fafa6722cdc03b/Cloud/en-US/OdataV2.pdf#page=66)",
+            "in": "query",
+            "newParameterName": "top"
+          },
+          {
+            "name": "$skip",
+            "description": "Skip the first n items, see [Paging - Skip](https://help.sap.com/doc/5890d27be418427993fafa6722cdc03b/Cloud/en-US/OdataV2.pdf#page=65)",
+            "in": "query",
+            "newParameterName": "skip"
+          },
+          {
+            "name": "$filter",
+            "description": "Filter items by property values, see [Filtering](https://help.sap.com/doc/5890d27be418427993fafa6722cdc03b/Cloud/en-US/OdataV2.pdf#page=64)",
+            "in": "query",
+            "newParameterName": "filter"
+          },
+          {
+            "name": "$inlinecount",
+            "description": "Include count of items, see [Inlinecount](https://help.sap.com/doc/5890d27be418427993fafa6722cdc03b/Cloud/en-US/OdataV2.pdf#page=67)",
+            "in": "query",
+            "newParameterName": "inlinecount"
+          },
+          {
+            "name": "$orderby",
+            "description": "Order items by property values, see [Sorting](https://help.sap.com/doc/5890d27be418427993fafa6722cdc03b/Cloud/en-US/OdataV2.pdf#page=65)",
+            "in": "query",
+            "newParameterName": "orderby"
+          },
+          {
+            "name": "$select",
+            "description": "Select properties to be returned, see [Select](https://help.sap.com/doc/5890d27be418427993fafa6722cdc03b/Cloud/en-US/OdataV2.pdf#page=68)",
+            "in": "query",
+            "newParameterName": "select"
+          }
+        ],
+        "requestBody": {},
+        "responseHeaders": [
+          {
+            "name": "age"
+          },
+          {
+            "name": "cache-control"
+          },
+          {
+            "name": "expires"
+          },
+          {
+            "name": "last-modified"
+          },
+          {
+            "name": "x-request-id"
+          },
+          {
+            "name": "x-correlation-id"
+          },
+          {
+            "name": "content-type"
+          },
+          {
+            "name": "content-encoding"
+          },
+          {
+            "name": "content-language"
+          },
+          {
+            "name": "content-length"
+          }
+        ]
+      },
+      "annotations": {
+        "readOnlyHint": true
+      }
+    },
+    {
+      "name": "create_timesheet_entry",
+      "title": "POST_TimeSheetEntryCollection",
+      "description": "Creates, updates, or deletes workforce timesheet entry based on the data provided in payload. You can set the type of operation you would like to perform on timesheet entry based on the ‘TimeSheetOperation’ parameter (Create(‘C’),Update(‘U’) and Delete(‘D’)).",
+      "openApiType": {
+        "path": "/TimeSheetEntryCollection",
+        "method": "post",
+        "parameters": [
+          {
+            "name": "body",
+            "description": "New entity",
+            "newParameterName": "body"
+          }
+        ],
+        "requestBody": {
+          "contentType": "application/json"
+        },
+        "responseHeaders": [
+          {
+            "name": "age"
+          },
+          {
+            "name": "cache-control"
+          },
+          {
+            "name": "expires"
+          },
+          {
+            "name": "last-modified"
+          },
+          {
+            "name": "x-request-id"
+          },
+          {
+            "name": "x-correlation-id"
+          },
+          {
+            "name": "content-type"
+          },
+          {
+            "name": "content-encoding"
+          },
+          {
+            "name": "content-language"
+          },
+          {
+            "name": "content-length"
+          }
+        ]
+      },
+      "annotations": {
+        "readOnlyHint": false
+      }
+    },
+    {
+      "name": "GET_TimeSheetEntryCollection_PersonWorkAgreementExternalID__Pers",
+      "title": "GET_TimeSheetEntryCollection_PersonWorkAgreementExternalID__PersonWorkAgreementExternalID__CompanyCode__CompanyCode__TimeSheetRecord__TimeSheetRecord__",
+      "description": "Reads data for a workforce timesheet entry. It retrieves the information about the time recording made by the workforce on a particular task and on a particular day. It also includes information such as recorded hours on a task, timesheet note, timesheet status and so on.",
+      "openApiType": {
+        "path": "/TimeSheetEntryCollection(PersonWorkAgreementExternalID='{PersonWorkAgreementExternalID}',CompanyCode='{CompanyCode}',TimeSheetRecord='{TimeSheetRecord}')",
+        "method": "get",
+        "parameters": [
+          {
+            "name": "PersonWorkAgreementExternalID",
+            "description": "Person Work Agreement External ID",
+            "in": "path",
+            "newParameterName": "personworkagreementexternalid"
+          },
+          {
+            "name": "CompanyCode",
+            "description": "Company Code",
+            "in": "path",
+            "newParameterName": "companycode"
+          },
+          {
+            "name": "TimeSheetRecord",
+            "description": "Time Sheet Record",
+            "in": "path",
+            "newParameterName": "timesheetrecord"
+          },
+          {
+            "name": "$select",
+            "description": "Select properties to be returned, see [Select](https://help.sap.com/doc/5890d27be418427993fafa6722cdc03b/Cloud/en-US/OdataV2.pdf#page=68)",
+            "in": "query",
+            "newParameterName": "select"
+          }
+        ],
+        "requestBody": {},
+        "responseHeaders": [
+          {
+            "name": "age"
+          },
+          {
+            "name": "cache-control"
+          },
+          {
+            "name": "expires"
+          },
+          {
+            "name": "last-modified"
+          },
+          {
+            "name": "x-request-id"
+          },
+          {
+            "name": "x-correlation-id"
+          },
+          {
+            "name": "content-type"
+          },
+          {
+            "name": "content-encoding"
+          },
+          {
+            "name": "content-language"
+          },
+          {
+            "name": "content-length"
+          }
+        ]
+      },
+      "annotations": {
+        "readOnlyHint": true
+      }
+    }
+  ]
+}

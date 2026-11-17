@@ -1,0 +1,11 @@
+apiVersion: solution.sap/v1
+kind: Solution
+
+metadata:
+  name: timesheet-update-agent-830c1
+  version: "1.0.0"
+  description: Conversational AI agent for SAP S/4HANA timesheet entry — allows employees to create time entries via chat with WBS, date, time type, and hours.
+
+assets:
+  - ref: ./assets/timesheet-update-agent/asset.yaml
+  - ref: ./assets/sap-s4-manage-workforce-timesheet-mcp-server/asset.yaml

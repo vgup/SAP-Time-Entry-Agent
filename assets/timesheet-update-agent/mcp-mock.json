@@ -1,0 +1,246 @@
+{
+  "servers": {
+    "s4-workforce-timesheet": {
+      "mcp_server_name": "sap.mcp/workforce_timesheet",
+      "description": "MCP server for SAP S/4HANA Workforce Timesheet OData API \u2014 reads and creates employee time entries.",
+      "tools": {
+        "list_timesheet_entries": {
+          "description": "Reads all workforce timesheet entries. Use to check existing entries and approval status for a given date.",
+          "input_schema": {
+            "type": "object",
+            "properties": {
+              "top": {
+                "type": "string",
+                "description": "Maximum number of items to return (e.g. 100)"
+              },
+              "skip": {
+                "type": "string",
+                "description": "Skip the first n items"
+              },
+              "filter": {
+                "type": "string",
+                "description": "OData filter expression"
+              },
+              "inlinecount": {
+                "type": "string",
+                "description": "Include count of items"
+              },
+              "orderby": {
+                "type": "string",
+                "description": "Order items by property values"
+              }
+            },
+            "required": []
+          },
+          "mock_response": {
+            "results": [
+              {
+                "PersonWorkAgreementExternalID": "EMP-00123",
+                "CompanyCode": "1000",
+                "TimeSheetRecord": "TSR-001",
+                "TimeSheetDate": "/Date(1731628800000)/",
+                "TimeSheetStatus": "10",
+                "RecordedHours": "8.0",
+                "TimeSheetOvertimeCategory": "",
+                "TimeSheetNote": "Development work on SAP project",
+                "WBSElement": "P-1001",
+                "ActivityType": "DSGN",
+                "ControllingArea": "A000",
+                "SenderCostCenter": "CC-1000",
+                "ReceiverCostCenter": "",
+                "InternalOrder": "",
+                "PurchaseOrder": "",
+                "PurchaseOrderItem": "00000",
+                "WorkItem": "",
+                "TimeSheetTaskType": "10",
+                "TimeSheetTaskLevel": "1",
+                "TimeSheetTaskComponent": "",
+                "BillingControlCategory": "",
+                "RecordedQuantity": "0.0",
+                "HoursUnitOfMeasure": "H",
+                "RejectionReason": "",
+                "TimeSheetIsReleasedOnSave": false,
+                "TimeSheetIsExecutedInTestRun": false,
+                "TimeSheetOperation": "C",
+                "TimeSheetPredecessorRecord": "",
+                "TimeSheetWrkLocCode": ""
+              },
+              {
+                "PersonWorkAgreementExternalID": "EMP-00123",
+                "CompanyCode": "1000",
+                "TimeSheetRecord": "TSR-002",
+                "TimeSheetDate": "/Date(1731628800000)/",
+                "TimeSheetStatus": "10",
+                "RecordedHours": "4.0",
+                "TimeSheetOvertimeCategory": "",
+                "TimeSheetNote": "Development work on SAP project",
+                "WBSElement": "P-1002",
+                "ActivityType": "DSGN",
+                "ControllingArea": "A000",
+                "SenderCostCenter": "CC-1000",
+                "ReceiverCostCenter": "",
+                "InternalOrder": "",
+                "PurchaseOrder": "",
+                "PurchaseOrderItem": "00000",
+                "WorkItem": "",
+                "TimeSheetTaskType": "10",
+                "TimeSheetTaskLevel": "1",
+                "TimeSheetTaskComponent": "",
+                "BillingControlCategory": "",
+                "RecordedQuantity": "0.0",
+                "HoursUnitOfMeasure": "H",
+                "RejectionReason": "",
+                "TimeSheetIsReleasedOnSave": false,
+                "TimeSheetIsExecutedInTestRun": false,
+                "TimeSheetOperation": "C",
+                "TimeSheetPredecessorRecord": "",
+                "TimeSheetWrkLocCode": ""
+              }
+            ]
+          }
+        },
+        "create_timesheet_entry": {
+          "description": "Creates, updates, or deletes a workforce timesheet entry. Set TimeSheetOperation to C (Create), U (Update), or D (Delete).",
+          "input_schema": {
+            "type": "object",
+            "properties": {
+              "body": {
+                "type": "object",
+                "description": "Timesheet entry payload",
+                "properties": {
+                  "PersonWorkAgreementExternalID": {
+                    "type": "string"
+                  },
+                  "CompanyCode": {
+                    "type": "string"
+                  },
+                  "TimeSheetDate": {
+                    "type": "string"
+                  },
+                  "TimeSheetOperation": {
+                    "type": "string",
+                    "description": "C=Create, U=Update, D=Delete"
+                  },
+                  "TimeSheetIsReleasedOnSave": {
+                    "type": "boolean"
+                  },
+                  "TimeSheetIsExecutedInTestRun": {
+                    "type": "boolean"
+                  },
+                  "TimeSheetDataFields": {
+                    "type": "object",
+                    "properties": {
+                      "WBSElement": {
+                        "type": "string"
+                      },
+                      "ActivityType": {
+                        "type": "string"
+                      },
+                      "RecordedHours": {
+                        "type": "string"
+                      },
+                      "TimeSheetNote": {
+                        "type": "string"
+                      },
+                      "ControllingArea": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "required": [
+              "body"
+            ]
+          },
+          "mock_response": {
+            "PersonWorkAgreementExternalID": "EMP-00123",
+            "CompanyCode": "1000",
+            "TimeSheetRecord": "TSR-999",
+            "TimeSheetDate": "/Date(1731628800000)/",
+            "TimeSheetStatus": "10",
+            "TimeSheetOperation": "C",
+            "WBSElement": "P-1001",
+            "RecordedHours": "8.0",
+            "TimeSheetNote": "Development work on SAP project",
+            "TimeSheetIsReleasedOnSave": false,
+            "TimeSheetIsExecutedInTestRun": false
+          }
+        },
+        "GET_TimeSheetEntryCollection_PersonWorkAgreementExternalID__Pers": {
+          "description": "Reads a single workforce timesheet entry by key (PersonWorkAgreementExternalID, CompanyCode, TimeSheetRecord).",
+          "input_schema": {
+            "type": "object",
+            "properties": {
+              "PersonWorkAgreementExternalID": {
+                "type": "string",
+                "description": "Employee external ID"
+              },
+              "CompanyCode": {
+                "type": "string",
+                "description": "Company code"
+              },
+              "TimeSheetRecord": {
+                "type": "string",
+                "description": "Timesheet record ID"
+              },
+              "select": {
+                "type": "string",
+                "description": "Fields to return"
+              }
+            },
+            "required": [
+              "PersonWorkAgreementExternalID",
+              "CompanyCode",
+              "TimeSheetRecord"
+            ]
+          },
+          "mock_response": {
+            "PersonWorkAgreementExternalID": "EMP-00123",
+            "CompanyCode": "1000",
+            "TimeSheetRecord": "TSR-001",
+            "TimeSheetDate": "/Date(1731628800000)/",
+            "TimeSheetStatus": "10",
+            "RecordedHours": "8.0",
+            "TimeSheetOvertimeCategory": "",
+            "TimeSheetNote": "Development work on SAP project",
+            "WBSElement": "P-1001",
+            "ActivityType": "DSGN",
+            "ControllingArea": "A000",
+            "SenderCostCenter": "CC-1000",
+            "ReceiverCostCenter": "",
+            "InternalOrder": "",
+            "PurchaseOrder": "",
+            "PurchaseOrderItem": "00000",
+            "WorkItem": "",
+            "TimeSheetTaskType": "10",
+            "TimeSheetTaskLevel": "1",
+            "TimeSheetTaskComponent": "",
+            "BillingControlCategory": "",
+            "RecordedQuantity": "0.0",
+            "HoursUnitOfMeasure": "H",
+            "RejectionReason": "",
+            "TimeSheetIsReleasedOnSave": false,
+            "TimeSheetIsExecutedInTestRun": false,
+            "TimeSheetOperation": "C",
+            "TimeSheetPredecessorRecord": "",
+            "TimeSheetWrkLocCode": ""
+          }
+        }
+      }
+    }
+  },
+  "metadata": {
+    "version": "1.0.0",
+    "created_for_agent": "timesheet-update-agent",
+    "mock_mode": true,
+    "deterministic": true,
+    "total_servers": 1,
+    "total_tools": 3,
+    "generated_from": [
+      "translation.json"
+    ],
+    "generation_date": "2026-11-15"
+  }
+}

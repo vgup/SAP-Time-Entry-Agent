@@ -1,0 +1,41 @@
+apiVersion: asset.sap/v1
+kind: Asset
+type: agent
+
+metadata:
+  name: timesheet-update-agent
+  description: Conversational AI agent that helps employees create SAP S/4HANA timesheet entries by providing WBS element, date, time type, and hours — with validation, approval status check, and confirmation before submission.
+
+provides:
+  apis:
+    - name: timesheet-update-agent
+      kind: a2a
+      ordId: customer.build:apiResource:timesheet-update-agent-830c1.timesheet-update-agent:v1
+
+container:
+  buildPath: .
+  port: 5000
+
+requires:
+  - name: sap-s4-manage-workforce-timesheet-mcp-server
+    kind: mcp-server
+    ordId: customer.build:apiResource:timesheet-update-agent-830c1.sap-s4-manage-workforce-timesheet-mcp-server:v1
+
+probes:
+  startup:
+    path: /.well-known/agent.json
+    periodSeconds: 5
+    timeoutSeconds: 3
+    failureThreshold: 18
+  liveness:
+    path: /.well-known/agent.json
+    initialDelaySeconds: 15
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 3
+  readiness:
+    path: /.well-known/agent.json
+    initialDelaySeconds: 5
+    periodSeconds: 5
+    timeoutSeconds: 3
+    failureThreshold: 3

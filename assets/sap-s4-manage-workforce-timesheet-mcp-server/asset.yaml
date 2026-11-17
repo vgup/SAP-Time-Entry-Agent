@@ -1,0 +1,21 @@
+apiVersion: asset.sap/v1
+kind: Asset
+type: mcp-server
+
+metadata:
+  name: sap-s4-manage-workforce-timesheet-mcp-server
+  description: Exposes SAP S/4HANA Workforce Timesheet OData API operations as MCP tools for reading and creating employee time entries.
+  version: "1.0.0"
+  translation: mcp-translation/translation.json
+  apiSpec: mcp-translation/api-spec.json
+
+provides:
+  apis:
+    - name: sap-s4-manage-workforce-timesheet-mcp-server
+      kind: mcp-server
+      ordId: customer.build:apiResource:timesheet-update-agent-830c1.sap-s4-manage-workforce-timesheet-mcp-server:v1
+
+requires:
+  - name: API_MANAGE_WORKFORCE_TIMESHEET
+    kind: api
+    ordId: sap.s4:apiResource:API_MANAGE_WORKFORCE_TIMESHEET:v1
