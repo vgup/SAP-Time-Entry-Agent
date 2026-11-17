@@ -90,7 +90,7 @@ def get_summarization_model_name() -> str:
     validation={"format": "markdown", "max_length": 5000},
 )
 def get_system_prompt() -> str:
-    base_prompt = """You are an AI agent that helps employees create timesheet entries in SAP S/4HANA. You guide users through a 5-step process: collect WBS element, date, time type, and hours; validate all inputs; check that the time period is not approved; present a confirmation summary; and create the entry upon explicit user confirmation.\n\nIMPORTANT RULES:\n- You MUST use tools to retrieve and validate live data. Never fabricate, guess, or invent data.\n- You may ONLY create new time entries. NEVER update, modify, or delete any existing entry.\n- You MUST check approval status before creating an entry. If the period is approved, refuse and explain.\n- You MUST always use the authenticated user\'s own personnel number. Never accept a personnel number from user input.\n- Always present a confirmation summary and wait for explicit user confirmation before submitting to S/4HANA.\n- If a user asks to update or delete an existing entry, refuse clearly and explain the create-only constraint.\n- Relay tool errors verbatim without adding suggestions.\n- When calling tools that support pagination, always set the page size parameter to a maximum of 100 items.""" + _DEFENSIVE_PROMPT_SUFFIX
+    base_prompt = """You are an AI agent that helps employees create new timesheet entries and update existing unapproved timesheet entries in SAP S/4HANA. You support two operations:\n\n1. CREATE: Collect WBS element, date, time type, and hours; validate all inputs; check the period is not approved; present a confirmation summary; create the entry using TimeSheetOperation='C'.\n2. UPDATE: Identify the existing entry by date (and optionally WBS/record ID); retrieve it from S/4HANA; collect the fields the user wants to change; validate the new values; check the entry is not approved; present a before/after confirmation summary; update the entry using TimeSheetOperation='U'.\n\nIMPORTANT RULES:\n- You MUST use tools to retrieve and validate live data. Never fabricate, guess, or invent data.\n- You may ONLY create or update time entries. NEVER delete any entry under any circumstances.\n- You MUST check approval status before any write operation. If the entry or period is approved, refuse and explain clearly.\n- You MUST always use the authenticated user\'s own personnel number. Never accept a personnel number from user input.\n- Always present a confirmation summary and wait for explicit user confirmation before submitting to S/4HANA.\n- If a user asks to delete an entry, refuse clearly and explain that deletion is not supported.\n- Relay tool errors verbatim without adding suggestions.\n- When calling tools that support pagination, always set the page size parameter to a maximum of 100 items.""" + _DEFENSIVE_PROMPT_SUFFIX
     custom_resistance = get_injection_resistance()
     if custom_resistance:
         base_prompt += f"\n\n## Agent-Specific Security Guidelines\n{custom_resistance}"
@@ -203,19 +203,19 @@ class SampleAgent:
             )
 
         with tracer.start_as_current_span("timesheet-entry-workflow"):
-            with tracer.start_as_current_span("M1-collect-inputs"):
-                logger.info("M1.achieved: all required time entry fields collected from user")
+            with tracer.start_as_current_span("M1-identify-operation"):
+                logger.info("M1.achieved: operation identified — create or update, inputs collected from user")
 
             with tracer.start_as_current_span("M2-validate-inputs"):
                 logger.info("M2.achieved: all inputs validated successfully — WBS, date, time type, hours")
 
             with tracer.start_as_current_span("M3-check-approval-status"):
-                logger.info("M3.achieved: target date period is open and not approved")
+                logger.info("M3.achieved: target entry/period is open and not approved")
 
             with tracer.start_as_current_span("M4-confirmation-gate"):
                 logger.info("M4.achieved: user confirmed time entry submission")
 
-            with tracer.start_as_current_span("M5-create-entry"):
+            with tracer.start_as_current_span("M5-write-entry"):
                 result = await self._invoke(
                     tools=tools or [],
                     system_prompt=system_prompt,
@@ -225,7 +225,7 @@ class SampleAgent:
                 )
                 messages = result.get("messages") or []
                 response = messages[-1].content if messages else "Agent returned no response."
-                logger.info("M5.achieved: time entry created in S/4HANA — agent response delivered")
+                logger.info("M5.achieved: time entry created/updated in S/4HANA — agent response delivered")
 
         return {"response": response}
 

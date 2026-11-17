@@ -10,18 +10,18 @@
 ## Product Purpose & Value Proposition
 
 **Elevator Pitch:**
-Employees waste up to 2 hours every week navigating complex SAP screens to log their time. A conversational AI agent lets them record timesheet entries by simply describing what they worked on — the agent handles validation, safety checks, and submission to S/4HANA automatically.
+Employees waste up to 2 hours every week navigating complex SAP screens to log and correct their time. A conversational AI agent lets them create new entries or update existing unapproved ones by simply describing what they want to change — the agent handles validation, safety checks, and submission to S/4HANA automatically.
 
 **Business Need:**
-There is no guided or conversational interface for timesheet entry in SAP S/4HANA. Employees must navigate multiple screens, look up WBS element codes, and manually select time types — a repetitive, error-prone process that consumes significant productive time each week.
+There is no guided or conversational interface for timesheet entry or correction in SAP S/4HANA. Employees must navigate multiple screens, look up WBS element codes, and manually select time types — a repetitive, error-prone process that also makes self-service corrections unnecessarily complex.
 
 **Expected Value:**
 Reduce average weekly timesheet entry time per employee from 2 hours to 30 minutes within 3 months of go-live — a 75% reduction in time spent on administrative data entry.
 
 **Product Objectives (Prioritized):**
-1. Enable employees to create S/4HANA timesheet entries conversationally in under 5 minutes
+1. Enable employees to create new or update existing unapproved S/4HANA timesheet entries conversationally in under 5 minutes
 2. Eliminate incorrect submissions by validating all inputs before writing to S/4HANA
-3. Guarantee data integrity by enforcing a strict no-modify / no-touch-approved-time policy
+3. Guarantee data integrity by enforcing a strict no-touch-approved-time policy and never deleting entries
 4. Provide a self-service experience that requires no SAP screen navigation
 
 ---
@@ -59,7 +59,7 @@ Alex is a 34-year-old project team member who works across multiple WBS elements
 
 1. **Conversation first**: All interactions happen in natural language. The agent collects missing inputs through follow-up questions rather than requiring the user to know the exact format upfront.
 2. **Validate before you write**: No data is sent to S/4HANA until all inputs are confirmed valid and the user has explicitly approved the submission.
-3. **Safety by constraint**: The agent is hard-coded to create entries only. It will never update, delete, or touch approved time — regardless of what the user asks.
+3. **Safety by constraint**: The agent supports create and update of unapproved entries only. It will never delete entries or touch approved time — regardless of what the user asks.
 4. **Self-service boundaries**: The agent operates strictly within the authenticated user's own timesheet. It cannot access or modify another person's data.
 5. **Fail clearly**: When a validation fails or an API error occurs, the agent explains what went wrong in plain language and guides the user to correct it.
 
@@ -70,14 +70,16 @@ Alex is a 34-year-old project team member who works across multiple WBS elements
 ### Goals (In Scope)
 
 - Allow employees to create new timesheet entries in SAP S/4HANA through a conversational chat interface
-- Validate WBS element, date, time type and hours before submission
-- Check that the target time period contains no approved entries before writing
+- Allow employees to update existing unapproved timesheet entries through the same conversational interface
+- Validate WBS element, date, time type and hours before any write operation
+- Check that the target time entry is not approved before any write operation
 - Present a structured confirmation summary and require explicit user approval before submitting
 - Restrict all operations to the currently authenticated user's own timesheet
 
 ### Non-Goals (Out of Scope)
 
-- Updating or deleting existing timesheet entries of any kind
+- Deleting existing timesheet entries
+- Updating or touching approved timesheet entries under any circumstances
 - Submitting or approving timesheet periods
 - Manager proxy entry (entering time on behalf of another employee)
 - Reading back or reporting on existing timesheet history
@@ -143,15 +145,27 @@ Alex is a 34-year-old project team member who works across multiple WBS elements
 - **Maps to Objective**: Objective 3
 - **Priority Rank**: 5
 
-**R6: Create-Only Constraint**
+**R6: Update Unapproved Time Entries**
 
-- **Problem to Solve**: Allowing updates or deletions risks corrupting historical timesheet data and payroll integrity.
-- **User Story**: As an employee, I want the agent to be limited to creating new entries only so that existing or approved records are never accidentally changed.
+- **Problem to Solve**: Employees make mistakes in existing time entries and currently have no conversational way to correct them — they must navigate SAP screens and find the exact record to update.
+- **User Story**: As an employee, I want to tell the agent which existing time entry I want to change and what I want to change it to, so that I can correct mistakes without navigating SAP screens.
 - **Acceptance Criteria**:
-  - Given any user request to update or delete a time entry, when the agent interprets the intent, then it refuses and explains that only new entries can be created.
-  - Given a confirmed new entry, when the agent submits to S/4HANA, then it uses only the Create operation of the Workforce Timesheet API.
-- **Maps to Objective**: Objective 3
+  - Given I ask to update a time entry, when the agent retrieves my existing entries for the relevant date, then it presents the matching entry and asks which field(s) I want to change.
+  - Given I provide the changes (e.g., different hours or WBS), when the agent validates the new values, then it presents a confirmation summary showing the before and after values.
+  - Given I confirm, when the agent submits to S/4HANA, then it uses the Update operation (`TimeSheetOperation='U'`) on the Workforce Timesheet API.
+  - Given the target entry is approved, when the agent checks approval status, then it refuses the update and explains that approved time cannot be changed.
+- **Maps to Objective**: Objectives 1 & 3
 - **Priority Rank**: 6
+
+**R7: No Deletion Constraint**
+
+- **Problem to Solve**: Allowing deletions risks data loss and payroll integrity issues.
+- **User Story**: As an employee, I want to know that the agent will never delete any of my time entries so that my historical records remain safe.
+- **Acceptance Criteria**:
+  - Given any user request to delete a time entry, when the agent interprets the intent, then it refuses and explains that deletion is not supported.
+  - The agent never calls the Delete operation on the Workforce Timesheet API under any circumstances.
+- **Maps to Objective**: Objective 3
+- **Priority Rank**: 7
 
 ---
 
@@ -163,7 +177,7 @@ A Python AI agent (A2A protocol) is deployed as a browser-based chat service. It
 **Key Components:**
 
 - **Python AI Agent (A2A)**: Conversational engine that collects inputs, enforces business rules, and orchestrates tool calls. Deployed as a browser-accessible chat interface.
-- **MCP Server (generated)**: Translates the Workforce Timesheet OData API (`API_MANAGE_WORKFORCE_TIMESHEET:v1`) into structured MCP tools consumable by the agent. Exposes read (status/approval check) and create (time entry) operations only.
+- **MCP Server (generated)**: Translates the Workforce Timesheet OData API (`API_MANAGE_WORKFORCE_TIMESHEET:v1`) into structured MCP tools consumable by the agent. Exposes read (status/approval check), create, and update operations. Delete operations are never exposed.
 - **SAP S/4HANA — Workforce Timesheet OData API**: The system of record. All time entry data is read from and written to this API.
 
 **Integration Points:**
@@ -198,19 +212,20 @@ All five key business milestones must emit structured log statements to enable p
 
 **Actions that require human review or approval:**
 - Creating a time entry in S/4HANA (always requires explicit user confirmation)
+- Updating an existing time entry in S/4HANA (always requires explicit user confirmation showing before/after values)
 
 **Model or engine used:** Large language model via SAP Generative AI Hub
 
 **Knowledge & data sources accessed:**
-- SAP S/4HANA Workforce Timesheet API: timesheet entry status (read), time entry creation (write)
+- SAP S/4HANA Workforce Timesheet API: timesheet entry status (read), time entry creation (write), time entry update (write)
 
 **Tools or connectors invoked:**
-- `read_timesheet_entries` (MCP tool, read-only): reads existing timesheet records to check approval status for a given date and personnel number
-- `create_timesheet_entry` (MCP tool, write): creates a new timesheet entry in S/4HANA with the provided WBS, date, time type and hours
+- `list_timesheet_entries` (MCP tool, read-only): reads existing timesheet records to check approval status and retrieve entry details for update flows
+- `create_timesheet_entry` (MCP tool, write): creates a new timesheet entry or updates an existing one in S/4HANA using `TimeSheetOperation='C'` or `'U'` respectively
 
 **Guardrails & fail-safes:**
-- The agent must never call any update or delete operation on the Workforce Timesheet API under any circumstances.
-- If the target date's timesheet period is approved, the agent must refuse and inform the user — no exception.
+- The agent must never call any delete operation on the Workforce Timesheet API under any circumstances.
+- If the target date's timesheet period is approved, the agent must refuse both create and update operations and inform the user — no exception.
 - All API calls must use the authenticated user's own personnel number; externally supplied personnel numbers must be rejected.
 - If the Workforce Timesheet API returns an error, the agent must surface a plain-language explanation and allow the user to correct inputs.
 - If confidence in parsing the user's intent is low, the agent must ask a clarifying question rather than guessing.
@@ -219,12 +234,12 @@ All five key business milestones must emit structured log statements to enable p
 
 ## Milestones
 
-### M1: Time Entry Initiated
+### M1: Operation Identified
 
-- **Description**: The user has provided all four required fields — WBS element, date, time type, and hours — conversationally.
-- **Achieved when**: All four fields have been captured and are non-empty.
-- **Log on achievement**: `M1.achieved: all required time entry fields collected from user`
-- **Log on miss**: `M1.missed: user session ended before all required fields were provided`
+- **Description**: The user has expressed intent to create a new entry or update an existing unapproved entry, and the agent has determined the operation type and collected the required inputs.
+- **Achieved when**: Operation type (create or update) is determined and all required fields are captured.
+- **Log on achievement**: `M1.achieved: operation identified — [create|update], inputs collected from user`
+- **Log on miss**: `M1.missed: user session ended before operation type or required fields were established`
 
 ### M2: Inputs Validated
 
@@ -235,10 +250,10 @@ All five key business milestones must emit structured log statements to enable p
 
 ### M3: Approval Status Checked
 
-- **Description**: The agent has queried S/4HANA to confirm the target date's timesheet period is not approved.
-- **Achieved when**: The API confirms the period is open and not approved.
-- **Log on achievement**: `M3.achieved: target date period is open and not approved`
-- **Log on miss**: `M3.missed: target date period is approved — entry creation blocked`
+- **Description**: The agent has queried S/4HANA to confirm the target time entry/period is not approved.
+- **Achieved when**: The API confirms the entry or period is open and not approved.
+- **Log on achievement**: `M3.achieved: target entry/period is open and not approved`
+- **Log on miss**: `M3.missed: target entry/period is approved — write operation blocked`
 
 ### M4: Confirmation Presented
 
@@ -247,12 +262,12 @@ All five key business milestones must emit structured log statements to enable p
 - **Log on achievement**: `M4.achieved: user confirmed time entry submission`
 - **Log on miss**: `M4.missed: user declined or abandoned confirmation step`
 
-### M5: Entry Created in S/4HANA
+### M5: Entry Written to S/4HANA
 
-- **Description**: The time entry has been successfully written to S/4HANA via the Workforce Timesheet API.
-- **Achieved when**: The API returns a success response for the create operation.
-- **Log on achievement**: `M5.achieved: time entry created in S/4HANA — WBS: [wbs], date: [date], hours: [hours]`
-- **Log on miss**: `M5.missed: time entry creation failed — API error: [error_message]`
+- **Description**: The time entry has been successfully created or updated in S/4HANA via the Workforce Timesheet API.
+- **Achieved when**: The API returns a success response for the create or update operation.
+- **Log on achievement**: `M5.achieved: time entry [created|updated] in S/4HANA — WBS: [wbs], date: [date], hours: [hours]`
+- **Log on miss**: `M5.missed: time entry [create|update] failed — API error: [error_message]`
 
 ---
 

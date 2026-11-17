@@ -110,9 +110,13 @@ def test_agent_system_prompt_contains_guardrails():
     from agent import get_system_prompt
     prompt = get_system_prompt()
 
-    # Must contain create-only constraint
-    assert "ONLY create" in prompt or "only create" in prompt.lower() or "NEVER update" in prompt or "NEVER modify" in prompt, \
-        "System prompt must enforce create-only constraint"
+    # Must support both create and update (not create-only)
+    assert "create" in prompt.lower() and "update" in prompt.lower(), \
+        "System prompt must describe both create and update operations"
+
+    # Must still forbid deletion
+    assert "NEVER delete" in prompt or "never delete" in prompt.lower(), \
+        "System prompt must prohibit deletion"
 
     # Must contain approval status check requirement
     assert "approved" in prompt.lower(), \
@@ -273,20 +277,21 @@ def test_skill_file_exists():
 
 
 def test_skill_file_has_required_sections():
-    """Verify the runtime skill contains all 5 required workflow steps."""
+    """Verify the runtime skill contains all required workflow sections."""
     skill_path = Path(__file__).parent.parent / "app" / "skills" / "timesheet-entry" / "SKILL.md"
     content = skill_path.read_text()
 
     required_sections = [
-        "Step 1",
-        "Step 2",
-        "Step 3",
-        "Step 4",
-        "Step 5",
         "Guardrails",
+        "Workflow",
+        "confirm",
+        "approved",
     ]
     for section in required_sections:
-        assert section in content, f"SKILL.md must contain section: {section}"
+        assert section in content, f"SKILL.md must contain section/keyword: {section}"
+    # Must have at least one step pattern (A1 or B1 or Step 1)
+    assert any(s in content for s in ["Step A1", "Step B1", "Step 1", "### Step"]), \
+        "SKILL.md must contain at least one step definition"
 
 
 def test_mcp_mock_has_correct_tools():
